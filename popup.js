@@ -21,7 +21,6 @@ class TimeTracker {
         this.loadTimeEntries();
         this.loadTimerState();
         this.updateDisplay();
-        this.updateHistory();
         
         // Listen for timer updates from background
         chrome.runtime.onMessage.addListener((message) => {
@@ -189,6 +188,7 @@ class TimeTracker {
     loadTimeEntries() {
         chrome.storage.local.get(['timeEntries'], (result) => {
             this.timeEntries = result.timeEntries || [];
+            this.updateHistory(); // Update history immediately after loading
         });
     }
     
