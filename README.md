@@ -11,6 +11,7 @@ A modern time tracking Chrome extension with Pomodoro features and CSV export.
 - 📊 CSV export functionality
 - 🎨 Modern dark theme with hover effects
 - 🔄 Background timer (continues when popup is closed)
+- 🕐 Custom timer icon in browser toolbar
 
 ## Setup Instructions
 
@@ -19,7 +20,7 @@ A modern time tracking Chrome extension with Pomodoro features and CSV export.
 1. Open Chrome and go to `chrome://extensions/`
 2. Enable "Developer mode" in the top right
 3. Click "Load unpacked" and select this folder
-4. The extension should now appear in your toolbar
+4. The extension should now appear in your toolbar with a custom timer icon
 
 ### 2. Usage
 
@@ -38,6 +39,11 @@ TimerPlugin/
 ├── styles.css            # Modern dark theme styling
 ├── popup.js              # Timer and local storage logic
 ├── background.js         # Background timer service
+├── icons/                # Extension icons
+│   ├── icon16.png        # 16x16 icon
+│   ├── icon32.png        # 32x32 icon
+│   ├── icon48.png        # 48x48 icon
+│   └── icon128.png       # 128x128 icon
 └── README.md             # This file
 ```
 
@@ -84,6 +90,13 @@ The extension uses a modern dark theme with:
 - Blue export button
 - Smooth animations and transitions
 
+### Custom Icon
+The extension includes a custom timer icon:
+- Dark theme matching the UI
+- Green timer hands and progress ring
+- Multiple sizes for different contexts
+- Professional appearance in browser toolbar
+
 ## Features
 
 ### Background Timer
@@ -101,11 +114,18 @@ The extension uses a modern dark theme with:
 - Automatic filename with current date
 - Compatible with Excel, Google Sheets, etc.
 
+### History View
+- Recent sessions displayed in popup
+- Last 10 entries shown
+- Scrollable list with hover effects
+- Quick overview of your work
+
 ## Troubleshooting
 
 1. **Extension not loading**: Make sure all files are in the same folder
 2. **Timer not running**: Check if background script is enabled
 3. **No export**: Make sure you have time entries saved
+4. **Icon not showing**: Reload the extension in chrome://extensions/
 
 ## Data Privacy
 
@@ -120,4 +140,5 @@ The extension uses a modern dark theme with:
 - [ ] Time analytics and reports
 - [ ] Multiple project support
 - [ ] Data backup/restore
-- [ ] Keyboard shortcuts 
+- [ ] Keyboard shortcuts
+- [ ] Custom icon themes 
