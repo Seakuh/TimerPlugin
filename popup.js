@@ -60,6 +60,18 @@ class TimeTracker {
         this.taskInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.saveNewTask();
         });
+        
+        // Add event delegation for delete buttons
+        this.historyList.addEventListener('click', (e) => {
+            if (e.target.closest('.delete-btn')) {
+                const historyItem = e.target.closest('.history-item');
+                console.log('History item:', historyItem);
+                console.log('Data entry index:', historyItem.dataset.entryIndex);
+                const entryIndex = parseFloat(historyItem.dataset.entryIndex); // Use parseFloat for decimal IDs
+                console.log('Parsed entry index:', entryIndex);
+                this.deleteTimeEntry(entryIndex);
+            }
+        });
     }
     
     async loadTimerState() {
@@ -194,7 +206,7 @@ class TimeTracker {
     
     async saveTimeEntry(task, minutes, seconds) {
         const entry = {
-            id: Date.now(),
+            id: Date.now() + Math.random(), // Ensure unique ID even for rapid entries
             task: task,
             duration: `${minutes}:${seconds.toString().padStart(2, '0')}`,
             timestamp: new Date().toISOString(),
@@ -215,15 +227,37 @@ class TimeTracker {
             return;
         }
         
-        this.historyList.innerHTML = this.timeEntries.map(entry => `
-            <div class="history-item">
-                <div class="history-task">${entry.task}</div>
-                <div class="history-details">
-                    <span class="history-duration">${entry.duration}</span>
-                    <span class="history-time">${entry.time}</span>
+        console.log('Time entries in updateHistory:', this.timeEntries);
+        
+        this.historyList.innerHTML = this.timeEntries.map((entry, index) => {
+            console.log('Entry ID being set:', entry.id, 'Type:', typeof entry.id);
+            return `
+            <div class="history-item" data-entry-index="${index}">
+                <div class="history-content">
+                    <div class="history-task">${entry.task}</div>
+                    <div class="history-details">
+                        <span class="history-duration">${entry.duration}</span>
+                        <span class="history-time">${entry.time}</span>
+                    </div>
                 </div>
+                <button class="delete-btn">
+                    <span class="delete-icon">🗑️</span>
+                </button>
             </div>
-        `).join('');
+        `;
+        }).join('');
+    }
+    
+    async deleteTimeEntry(entryIndex) {
+        // Remove entry from array
+        this.timeEntries = this.timeEntries.filter((_, index) => index !== entryIndex);
+        
+        // Save updated entries to storage
+        await chrome.storage.local.set({ timeEntries: this.timeEntries });
+        
+        // Update the display
+        this.updateHistory();
+        this.updateStatus('Entry deleted');
     }
     
     updateStatus(message) {
@@ -259,5 +293,5 @@ class TimeTracker {
 
 // Initialize the app when the popup loads
 document.addEventListener('DOMContentLoaded', () => {
-    new TimeTracker();
-}); 
+    window.timeTracker = new TimeTracker();
+});
