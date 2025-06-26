@@ -109,6 +109,7 @@ class TimeTracker {
             if (response.success) {
                 this.isRunning = true;
                 this.currentTask = this.taskSelect.value;
+                this.pomodoroMode = 'manual'; // Set to manual mode for normal timer
                 this.updateButtonStates();
                 this.timerElement.classList.add('timer-running');
                 this.updateStatus(`Tracking: ${this.currentTask}`);
@@ -126,7 +127,7 @@ class TimeTracker {
                 this.isRunning = false;
                 this.elapsedTime = 0;
                 this.currentTask = '';
-                this.pomodoroMode = 'work'; // Reset to default mode
+                this.pomodoroMode = 'manual'; // Reset to manual mode
                 
                 this.updateButtonStates();
                 this.timerElement.classList.remove('timer-running');
@@ -202,7 +203,7 @@ class TimeTracker {
             this.timerElement.textContent = 
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         } else {
-            // Normal count-up display for manual timer
+            // Normal count-up display for manual timer (starting from 00:00)
             const totalSeconds = Math.floor(this.elapsedTime / 1000);
             const minutes = Math.floor(totalSeconds / 60);
             const seconds = totalSeconds % 60;
