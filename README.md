@@ -1,15 +1,16 @@
 # Time Tracker Pro - Chrome Extension
 
-A modern time tracking Chrome extension with Pomodoro features and Google Sheets integration.
+A modern time tracking Chrome extension with Pomodoro features and CSV export.
 
 ## Features
 
 - ⏱️ Large retro-style timer display
 - 🍅 Pomodoro timer (25min work / 5min break)
 - 📝 Task management with dropdown selection
-- 📊 Automatic Google Sheets integration
+- 💾 Local storage for tasks and time entries
+- 📊 CSV export functionality
 - 🎨 Modern dark theme with hover effects
-- 💾 Local storage for tasks
+- 🔄 Background timer (continues when popup is closed)
 
 ## Setup Instructions
 
@@ -20,36 +21,13 @@ A modern time tracking Chrome extension with Pomodoro features and Google Sheets
 3. Click "Load unpacked" and select this folder
 4. The extension should now appear in your toolbar
 
-### 2. Google Sheets Integration (Easiest Method)
-
-#### Option A: Google Apps Script (Recommended)
-
-1. Go to [Google Apps Script](https://script.google.com/)
-2. Create a new project
-3. Copy the contents of `google-apps-script.gs` into the editor
-4. Create a new Google Sheet for your time tracking data
-5. In the Apps Script editor, go to "Deploy" → "New deployment"
-6. Choose "Web app" as the type
-7. Set access to "Anyone" (for simplicity)
-8. Deploy and copy the web app URL
-9. Replace `YOUR_GOOGLE_APPS_SCRIPT_URL` in `popup.js` with your web app URL
-
-#### Option B: Manual Google Sheet
-
-If you prefer to manually create the Google Sheet:
-
-1. Create a new Google Sheet
-2. Add these headers in row 1: `Date | Time | Task | Duration | Timestamp`
-3. Share the sheet with edit permissions
-4. Use the Google Sheets API (more complex setup required)
-
-### 3. Usage
+### 2. Usage
 
 1. Click the extension icon in your Chrome toolbar
 2. Select a task from the dropdown or add a new one
 3. Click "Start" to begin tracking
-4. Click "Stop" to end the session and save to Google Sheets
-5. Your time data will automatically appear in your Google Sheet
+4. Click "Stop" to end the session and save locally
+5. Use "Export CSV" to download your time data
 
 ## File Structure
 
@@ -58,9 +36,31 @@ TimerPlugin/
 ├── manifest.json          # Extension configuration
 ├── popup.html            # Main UI
 ├── styles.css            # Modern dark theme styling
-├── popup.js              # Timer and integration logic
-├── google-apps-script.gs # Google Apps Script for Sheets
+├── popup.js              # Timer and local storage logic
+├── background.js         # Background timer service
 └── README.md             # This file
+```
+
+## How It Works
+
+### Local Storage
+- **Tasks**: Stored locally in Chrome storage
+- **Time Entries**: All tracking sessions saved locally
+- **Timer State**: Continues running in background
+
+### CSV Export
+The exported CSV contains:
+- **Date**: Date of the session
+- **Time**: Time when session ended
+- **Task**: Task name
+- **Duration**: Session duration (MM:SS format)
+- **Timestamp**: Full ISO timestamp
+
+Example CSV:
+```csv
+Date,Time,Task,Duration,Timestamp
+15.12.2023,14:30:25,Programmierung,0:45,2023-12-15T13:30:25.123Z
+15.12.2023,15:20:10,Meeting,0:30,2023-12-15T14:20:10.456Z
 ```
 
 ## Customization
@@ -81,24 +81,43 @@ The extension uses a modern dark theme with:
 - Retro Orbitron font for the timer
 - Green start button with hover effects
 - Red stop button
+- Blue export button
 - Smooth animations and transitions
+
+## Features
+
+### Background Timer
+- Timer continues running when popup is closed
+- State is preserved across browser sessions
+- No data loss when switching tabs
+
+### Task Management
+- Add new tasks with the "+" button
+- Tasks are saved locally
+- Dropdown selection for quick access
+
+### CSV Export
+- Export all time entries at once
+- Automatic filename with current date
+- Compatible with Excel, Google Sheets, etc.
 
 ## Troubleshooting
 
 1. **Extension not loading**: Make sure all files are in the same folder
-2. **Google Sheets not updating**: Check the web app URL in `popup.js`
-3. **Tasks not saving**: Check Chrome's storage permissions
+2. **Timer not running**: Check if background script is enabled
+3. **No export**: Make sure you have time entries saved
 
-## Security Notes
+## Data Privacy
 
-- The Google Apps Script web app URL should be kept private
-- Consider using environment variables for production use
-- The extension only requests necessary permissions (storage, identity)
+- All data is stored locally in your browser
+- No data is sent to external servers
+- CSV export is generated locally
+- You have full control over your data
 
 ## Future Enhancements
 
 - [ ] Pomodoro notifications
 - [ ] Time analytics and reports
 - [ ] Multiple project support
-- [ ] Export functionality
+- [ ] Data backup/restore
 - [ ] Keyboard shortcuts 

@@ -9,7 +9,7 @@ body {
     color: #ffffff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     width: 350px;
-    height: 500px;
+    height: 600px;
     overflow: hidden;
 }
 
@@ -18,7 +18,7 @@ body {
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
 }
 
 /* Timer Section */
@@ -119,6 +119,19 @@ body {
     color: #1a1a1a;
 }
 
+.btn-export {
+    background: linear-gradient(135deg, #5352ed, #3742fa);
+    color: white;
+    font-size: 0.8rem;
+    padding: 8px 16px;
+    min-width: auto;
+}
+
+.btn-export:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(83, 82, 237, 0.4);
+}
+
 /* Task Section */
 .task-section {
     display: flex;
@@ -181,6 +194,85 @@ body {
     color: #888;
 }
 
+/* History Section */
+.history-section {
+    background: #2a2a2a;
+    border-radius: 12px;
+    padding: 15px;
+    border: 2px solid #3a3a3a;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #3a3a3a;
+}
+
+.history-header h3 {
+    color: #00ff88;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.history-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.history-empty {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    padding: 20px;
+}
+
+.history-item {
+    background: #1a1a1a;
+    border-radius: 8px;
+    padding: 12px;
+    border-left: 3px solid #00ff88;
+    transition: all 0.3s ease;
+}
+
+.history-item:hover {
+    background: #222;
+    transform: translateX(2px);
+}
+
+.history-task {
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.history-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.history-duration {
+    color: #00ff88;
+    font-weight: 600;
+    font-family: 'Orbitron', monospace;
+}
+
+.history-time {
+    color: #888;
+}
+
 /* Status Section */
 .status-section {
     text-align: center;
@@ -215,4 +307,23 @@ body {
 
 .mode-long-break {
     color: #ff4757;
+}
+
+/* Scrollbar styling */
+.history-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.history-list::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+    background: #3a3a3a;
+    border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb:hover {
+    background: #4a4a4a;
 } 

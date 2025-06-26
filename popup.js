@@ -6,7 +6,7 @@ class TimeTracker {
         this.tasks = [];
         this.pomodoroMode = 'work';
         this.pomodoroCount = 0;
-        this.sheetUrl = '';
+        this.timeEntries = [];
         
         // Pomodoro settings (in minutes)
         this.settings = {
@@ -18,9 +18,10 @@ class TimeTracker {
         
         this.initializeElements();
         this.loadTasks();
-        this.loadSheetUrl();
+        this.loadTimeEntries();
         this.loadTimerState();
         this.updateDisplay();
+        this.updateHistory();
         
         // Listen for timer updates from background
         chrome.runtime.onMessage.addListener((message) => {
@@ -45,6 +46,8 @@ class TimeTracker {
         this.taskInput = document.getElementById('taskInput');
         this.saveTaskBtn = document.getElementById('saveTaskBtn');
         this.statusElement = document.getElementById('status');
+        this.historyList = document.getElementById('historyList');
+        this.exportBtn = document.getElementById('exportBtn');
         
         this.bindEvents();
     }
@@ -54,6 +57,7 @@ class TimeTracker {
         this.stopBtn.addEventListener('click', () => this.stopTimer());
         this.addTaskBtn.addEventListener('click', () => this.showNewTaskInput());
         this.saveTaskBtn.addEventListener('click', () => this.saveNewTask());
+        this.exportBtn.addEventListener('click', () => this.exportCSV());
         this.taskInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.saveNewTask();
         });
@@ -110,12 +114,12 @@ class TimeTracker {
                 this.updateButtonStates();
                 this.timerElement.classList.remove('timer-running');
                 
-                // Save to Google Sheets
+                // Save time entry
                 const minutes = Math.floor(response.duration / 60);
                 const seconds = response.duration % 60;
-                await this.saveToGoogleSheets(response.task, minutes, seconds);
+                await this.saveTimeEntry(response.task, minutes, seconds);
                 
-                this.updateStatus('Time saved to Google Sheets');
+                this.updateStatus('Session saved');
                 this.updateDisplay();
             }
         } catch (error) {
@@ -182,46 +186,15 @@ class TimeTracker {
         chrome.storage.local.set({ tasks: this.tasks });
     }
     
-    loadSheetUrl() {
-        chrome.storage.local.get(['sheetUrl'], (result) => {
-            this.sheetUrl = result.sheetUrl || '';
-            if (!this.sheetUrl) {
-                this.showSheetSetup();
-            }
+    loadTimeEntries() {
+        chrome.storage.local.get(['timeEntries'], (result) => {
+            this.timeEntries = result.timeEntries || [];
         });
     }
     
-    showSheetSetup() {
-        const setupHtml = `
-            <div class="sheet-setup">
-                <h3>Google Sheet Setup</h3>
-                <p>Enter your Google Apps Script web app URL:</p>
-                <input type="text" id="sheetUrlInput" placeholder="https://script.google.com/macros/s/..." class="task-input">
-                <button class="btn btn-save" onclick="saveSheetUrl()">Save URL</button>
-                <p class="setup-help">
-                    <strong>How to get the URL:</strong><br>
-                    1. Go to <a href="https://script.google.com" target="_blank">Google Apps Script</a><br>
-                    2. Create new project and paste the code from google-apps-script.gs<br>
-                    3. Deploy as web app and copy the URL
-                </p>
-            </div>
-        `;
-        
-        this.statusElement.innerHTML = setupHtml;
-    }
-    
-    updateStatus(message) {
-        this.statusElement.textContent = message;
-    }
-    
-    // Google Sheets Integration
-    async saveToGoogleSheets(task, minutes, seconds) {
-        if (!this.sheetUrl) {
-            this.updateStatus('Please set up Google Sheet URL first');
-            return;
-        }
-        
-        const data = {
+    async saveTimeEntry(task, minutes, seconds) {
+        const entry = {
+            id: Date.now(),
             task: task,
             duration: `${minutes}:${seconds.toString().padStart(2, '0')}`,
             timestamp: new Date().toISOString(),
@@ -229,38 +202,60 @@ class TimeTracker {
             time: new Date().toLocaleTimeString()
         };
         
-        try {
-            const response = await fetch(this.sheetUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            });
-            
-            if (response.ok) {
-                this.updateStatus('Data saved successfully!');
-            } else {
-                throw new Error('Failed to save data');
-            }
-        } catch (error) {
-            console.error('Error saving to Google Sheets:', error);
-            this.updateStatus('Error saving data. Check console.');
+        this.timeEntries.unshift(entry); // Add to beginning
+        this.timeEntries = this.timeEntries.slice(0, 10); // Keep only last 10 entries
+        
+        await chrome.storage.local.set({ timeEntries: this.timeEntries });
+        this.updateHistory();
+    }
+    
+    updateHistory() {
+        if (this.timeEntries.length === 0) {
+            this.historyList.innerHTML = '<div class="history-empty">No sessions yet</div>';
+            return;
         }
+        
+        this.historyList.innerHTML = this.timeEntries.map(entry => `
+            <div class="history-item">
+                <div class="history-task">${entry.task}</div>
+                <div class="history-details">
+                    <span class="history-duration">${entry.duration}</span>
+                    <span class="history-time">${entry.time}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    updateStatus(message) {
+        this.statusElement.textContent = message;
+    }
+    
+    exportCSV() {
+        if (this.timeEntries.length === 0) {
+            this.updateStatus('No data to export');
+            return;
+        }
+        
+        const csvContent = [
+            'Date,Time,Task,Duration,Timestamp',
+            ...this.timeEntries.map(entry => 
+                `${entry.date},${entry.time},${entry.task},${entry.duration},${entry.timestamp}`
+            )
+        ].join('\n');
+        
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `time-tracker-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.updateStatus('CSV exported successfully');
     }
 }
-
-// Global function for sheet URL setup
-window.saveSheetUrl = function() {
-    const urlInput = document.getElementById('sheetUrlInput');
-    const url = urlInput.value.trim();
-    
-    if (url) {
-        chrome.storage.local.set({ sheetUrl: url }, () => {
-            location.reload(); // Reload popup to show normal interface
-        });
-    }
-};
 
 // Initialize the app when the popup loads
 document.addEventListener('DOMContentLoaded', () => {
