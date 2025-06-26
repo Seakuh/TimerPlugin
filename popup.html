@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Tracker Pro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="timer-section">
+            <div class="timer-display" id="timer">00:00</div>
+            <div class="timer-mode" id="mode">Work</div>
+        </div>
+        
+        <div class="controls-section">
+            <button class="btn btn-start" id="startBtn">
+                <span class="btn-text">Start</span>
+            </button>
+            <button class="btn btn-stop" id="stopBtn" disabled>
+                <span class="btn-text">Stop</span>
+            </button>
+        </div>
+        
+        <div class="task-section">
+            <div class="task-selector">
+                <select id="taskSelect" class="task-dropdown">
+                    <option value="">Select a task...</option>
+                </select>
+                <button class="btn btn-add" id="addTaskBtn">
+                    <span class="btn-text">+</span>
+                </button>
+            </div>
+            
+            <div class="new-task-input" id="newTaskInput" style="display: none;">
+                <input type="text" id="taskInput" placeholder="Enter new task name..." class="task-input">
+                <button class="btn btn-save" id="saveTaskBtn">
+                    <span class="btn-text">Save</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="status-section">
+            <div class="status-text" id="status">Ready to start</div>
+        </div>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html> 
