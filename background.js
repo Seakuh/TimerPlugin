@@ -5,7 +5,8 @@ let timerState = {
     elapsedTime: 0,
     currentTask: '',
     pomodoroMode: 'work',
-    pomodoroCount: 0
+    pomodoroCount: 0,
+    targetDuration: 0 // Target duration for Pomodoro/Break
 };
 
 // Load saved state when background script starts
@@ -26,6 +27,15 @@ function startBackgroundTimer() {
         setInterval(() => {
             if (timerState.isRunning) {
                 timerState.elapsedTime = Date.now() - timerState.startTime;
+                
+                // Check if Pomodoro/Break time is complete
+                if (timerState.targetDuration > 0 && timerState.elapsedTime >= timerState.targetDuration * 1000) {
+                    // Timer completed - show notification
+                    showTimerCompleteNotification();
+                    timerState.isRunning = false;
+                    timerState.elapsedTime = timerState.targetDuration * 1000;
+                }
+                
                 saveTimerState();
                 
                 // Send update to popup if open
@@ -44,6 +54,20 @@ function saveTimerState() {
     chrome.storage.local.set({ timerState: timerState });
 }
 
+function showTimerCompleteNotification() {
+    const title = timerState.pomodoroMode === 'work' ? '🍅 Pomodoro Complete!' : '☕ Break Complete!';
+    const message = timerState.pomodoroMode === 'work' 
+        ? `Great work! Time for a break.` 
+        : `Break time is over. Ready to work?`;
+    
+    chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icons/icon48.png',
+        title: title,
+        message: message
+    });
+}
+
 // Listen for messages from popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.type) {
@@ -52,6 +76,32 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             timerState.currentTask = message.task;
             timerState.startTime = Date.now();
             timerState.elapsedTime = 0;
+            timerState.targetDuration = 0; // No target duration for manual timer
+            timerState.pomodoroMode = 'work';
+            saveTimerState();
+            startBackgroundTimer();
+            sendResponse({ success: true });
+            break;
+            
+        case 'START_POMODORO':
+            timerState.isRunning = true;
+            timerState.currentTask = message.task;
+            timerState.startTime = Date.now();
+            timerState.elapsedTime = 0;
+            timerState.targetDuration = message.duration;
+            timerState.pomodoroMode = 'work';
+            saveTimerState();
+            startBackgroundTimer();
+            sendResponse({ success: true });
+            break;
+            
+        case 'START_BREAK':
+            timerState.isRunning = true;
+            timerState.currentTask = 'Break';
+            timerState.startTime = Date.now();
+            timerState.elapsedTime = 0;
+            timerState.targetDuration = message.duration;
+            timerState.pomodoroMode = 'break';
             saveTimerState();
             startBackgroundTimer();
             sendResponse({ success: true });

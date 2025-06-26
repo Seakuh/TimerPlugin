@@ -39,6 +39,8 @@ class TimeTracker {
         this.modeElement = document.getElementById('mode');
         this.startBtn = document.getElementById('startBtn');
         this.stopBtn = document.getElementById('stopBtn');
+        this.pomodoroBtn = document.getElementById('pomodoroBtn');
+        this.breakBtn = document.getElementById('breakBtn');
         this.taskSelect = document.getElementById('taskSelect');
         this.addTaskBtn = document.getElementById('addTaskBtn');
         this.newTaskInput = document.getElementById('newTaskInput');
@@ -54,6 +56,8 @@ class TimeTracker {
     bindEvents() {
         this.startBtn.addEventListener('click', () => this.startTimer());
         this.stopBtn.addEventListener('click', () => this.stopTimer());
+        this.pomodoroBtn.addEventListener('click', () => this.startPomodoro());
+        this.breakBtn.addEventListener('click', () => this.startBreak());
         this.addTaskBtn.addEventListener('click', () => this.showNewTaskInput());
         this.saveTaskBtn.addEventListener('click', () => this.saveNewTask());
         this.exportBtn.addEventListener('click', () => this.exportCSV());
@@ -81,6 +85,7 @@ class TimeTracker {
                 this.isRunning = response.isRunning;
                 this.elapsedTime = response.elapsedTime;
                 this.currentTask = response.currentTask;
+                this.pomodoroMode = response.pomodoroMode || 'work';
                 this.updateDisplay();
                 this.updateButtonStates();
             }
@@ -121,6 +126,7 @@ class TimeTracker {
                 this.isRunning = false;
                 this.elapsedTime = 0;
                 this.currentTask = '';
+                this.pomodoroMode = 'work'; // Reset to default mode
                 
                 this.updateButtonStates();
                 this.timerElement.classList.remove('timer-running');
@@ -138,13 +144,72 @@ class TimeTracker {
         }
     }
     
-    updateDisplay() {
-        const totalSeconds = Math.floor(this.elapsedTime / 1000);
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
+    async startPomodoro() {
+        if (!this.taskSelect.value) {
+            this.updateStatus('Please select a task first');
+            return;
+        }
         
-        this.timerElement.textContent = 
-            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        try {
+            const response = await chrome.runtime.sendMessage({
+                type: 'START_POMODORO',
+                task: this.taskSelect.value,
+                duration: 25 * 60 // 25 minutes in seconds
+            });
+            
+            if (response.success) {
+                this.isRunning = true;
+                this.currentTask = this.taskSelect.value;
+                this.pomodoroMode = 'work';
+                this.updateButtonStates();
+                this.timerElement.classList.add('timer-running');
+                this.updateStatus(`🍅 Pomodoro: ${this.currentTask}`);
+            }
+        } catch (error) {
+            console.error('Error starting pomodoro:', error);
+        }
+    }
+    
+    async startBreak() {
+        try {
+            const response = await chrome.runtime.sendMessage({
+                type: 'START_BREAK',
+                duration: 5 * 60 // 5 minutes in seconds
+            });
+            
+            if (response.success) {
+                this.isRunning = true;
+                this.currentTask = 'Break';
+                this.pomodoroMode = 'break';
+                this.updateButtonStates();
+                this.timerElement.classList.add('timer-running');
+                this.updateStatus('☕ Break time!');
+            }
+        } catch (error) {
+            console.error('Error starting break:', error);
+        }
+    }
+    
+    updateDisplay() {
+        if (this.pomodoroMode === 'work' || this.pomodoroMode === 'break') {
+            // Countdown display for Pomodoro/Break
+            const totalSeconds = Math.floor(this.elapsedTime / 1000);
+            const targetSeconds = this.pomodoroMode === 'work' ? 25 * 60 : 5 * 60; // 25 min or 5 min
+            const remainingSeconds = Math.max(0, targetSeconds - totalSeconds);
+            const minutes = Math.floor(remainingSeconds / 60);
+            const seconds = remainingSeconds % 60;
+            
+            this.timerElement.textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        } else {
+            // Normal count-up display for manual timer
+            const totalSeconds = Math.floor(this.elapsedTime / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            
+            this.timerElement.textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
         
         this.modeElement.textContent = this.pomodoroMode.charAt(0).toUpperCase() + this.pomodoroMode.slice(1);
         this.modeElement.className = `timer-mode mode-${this.pomodoroMode}`;
@@ -153,6 +218,8 @@ class TimeTracker {
     updateButtonStates() {
         this.startBtn.disabled = this.isRunning;
         this.stopBtn.disabled = !this.isRunning;
+        this.pomodoroBtn.disabled = this.isRunning;
+        this.breakBtn.disabled = this.isRunning;
     }
     
     showNewTaskInput() {

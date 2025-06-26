@@ -132,6 +132,36 @@ body {
     box-shadow: 0 6px 20px rgba(83, 82, 237, 0.4);
 }
 
+/* Pomodoro Section */
+.pomodoro-section {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.btn-pomodoro {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.btn-pomodoro:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.btn-break {
+    background: linear-gradient(135deg, #ffa726, #ff9800);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 167, 38, 0.3);
+}
+
+.btn-break:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 167, 38, 0.4);
+}
+
 /* Task Section */
 .task-section {
     display: flex;

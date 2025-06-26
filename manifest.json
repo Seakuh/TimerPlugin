@@ -5,7 +5,8 @@
   "description": "Track your time with Pomodoro feature and CSV export",
   "permissions": [
     "storage",
-    "background"
+    "background",
+    "notifications"
   ],
   "background": {
     "service_worker": "background.js"
