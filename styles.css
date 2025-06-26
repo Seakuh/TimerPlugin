@@ -246,7 +246,6 @@ body {
 
 .history-item:hover {
     background: #222;
-    transform: translateX(2px);
 }
 
 .history-task {
